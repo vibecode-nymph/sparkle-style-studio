@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingBag, Menu, X, Sparkles, Gem } from 'lucide-react';
+import { ShoppingBag, Menu, X, Search, Gem } from 'lucide-react';
 import { useCartStore } from '@/lib/cart-store';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -10,15 +10,15 @@ const Navbar = () => {
   const count = totalItems();
 
   const links = [
-    { to: '/', label: 'Home' },
-    { to: '/shop', label: 'Shop' },
-    { to: '/create', label: 'Create', icon: <Gem className="h-3.5 w-3.5" /> },
-    { to: '/try-on', label: 'Try On', icon: <Sparkles className="h-3.5 w-3.5" /> },
+    { to: '/shop?category=chains', label: 'Necklaces' },
+    { to: '/shop?category=bracelets', label: 'Bracelets' },
+    { to: '/shop', label: 'Best Sellers' },
+    { to: '/create', label: 'Personalized', icon: <Gem className="h-3.5 w-3.5" /> },
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
+    <nav className="sticky top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
+      <div className="container mx-auto flex h-14 items-center justify-between px-4">
         <Link to="/" className="font-display text-2xl font-bold text-gradient-gold tracking-wide">
           AURUM
         </Link>
@@ -38,6 +38,9 @@ const Navbar = () => {
         </div>
 
         <div className="flex items-center gap-4">
+          <button className="text-foreground hover:text-primary transition-colors">
+            <Search className="h-5 w-5" />
+          </button>
           <button onClick={toggleCart} className="relative text-foreground hover:text-primary transition-colors">
             <ShoppingBag className="h-5 w-5" />
             {count > 0 && (
