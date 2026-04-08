@@ -1,12 +1,11 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
-import { Gem, X, Plus, ShoppingBag, Sparkles } from 'lucide-react';
+import { Gem, X, Plus, ShoppingBag, Sparkles, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCartStore } from '@/lib/cart-store';
 import { toast } from 'sonner';
+import { useChains, useCharms } from '@/lib/api';
 import {
-  chainTypes,
-  charms,
   materials,
   chainLengths,
   calculatePrice,

@@ -54,3 +54,53 @@ export function useProduct(id: string) {
     enabled: !!id,
   });
 }
+
+// --- Chains & Charms for custom jewelry builder ---
+
+interface ApiChain {
+  id: string;
+  name: string;
+  material: string;
+  length_cm: number;
+  price: number;
+  base_price: number;
+  description: string;
+  images: string[];
+  active: boolean;
+}
+
+interface ApiCharm {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  emoji: string;
+  category: string;
+  active: boolean;
+}
+
+async function fetchChains(): Promise<ApiChain[]> {
+  const res = await fetch(`${API_BASE}/api/chains`);
+  if (!res.ok) throw new Error('Failed to fetch chains');
+  return res.json();
+}
+
+async function fetchCharms(): Promise<ApiCharm[]> {
+  const res = await fetch(`${API_BASE}/api/charms`);
+  if (!res.ok) throw new Error('Failed to fetch charms');
+  return res.json();
+}
+
+export function useChains() {
+  return useQuery({
+    queryKey: ['chains'],
+    queryFn: fetchChains,
+  });
+}
+
+export function useCharms() {
+  return useQuery({
+    queryKey: ['charms'],
+    queryFn: fetchCharms,
+  });
+}
