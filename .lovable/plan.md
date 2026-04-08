@@ -1,69 +1,53 @@
 
 
-# ✨ Jewelry E-Commerce Website
+## Plan: Add "Name Chains" Category + Name Charm Builder Step
 
-## Overview
-A bold, trendy jewelry store with full online shopping, admin product management, and AR necklace try-on.
+### Overview
+Add a new "Name Chains" product category across the site, and a new "Name Charm" customization step in the jewelry builder where customers type their name, pick a font style, and see a live preview on a gold pendant shape.
 
-## Design
-- **Style**: Bold & trendy — vibrant accent colors (gold/rose gold), strong typography, Instagram-ready product cards
-- **Dark background** with gold accent tones, modern sans-serif fonts
-- **Mobile-first** responsive design
+---
 
-## Pages & Features
+### 1. Add "Name Chains" category (`src/lib/mock-data.ts`)
+- Add a third entry to the `categories` array: `{ id: '3', name: 'Name Chains', slug: 'name-chains', image: '...', description: 'Personalized name chains crafted just for you' }`
 
-### 🏠 Homepage
-- Hero banner with featured collection
-- Trending products carousel
-- Category cards (Chains, Bracelets — expandable later)
-- "Try It On" CTA promoting the AR feature
+### 2. Update navigation (`src/components/Navbar.tsx`)
+- Add a "Name Chains" link pointing to `/shop?category=name-chains` in the `links` array
 
-### 🛍️ Shop / Category Pages
-- Product grid with filters (category, price range, material)
-- Sort by price, newest, popularity
-- Quick-view hover cards
+### 3. Update collection grid (`src/components/CollectionGrid.tsx`)
+- Add a "Name Chains" card linking to `/shop?category=name-chains`
 
-### 📦 Product Detail Page
-- Image gallery with zoom
-- Price, description, material, size options
-- "Add to Cart" button
-- **"Try It On" button** (for necklaces/chains) — launches AR camera overlay
-- Related products section
+### 4. Load Google Fonts (`index.html`)
+- Add `<link>` tags for Dancing Script and Montserrat (Playfair Display is already loaded)
 
-### 📸 AR Virtual Try-On (Necklaces)
-- Opens device camera (or lets user upload a photo)
-- Uses face/neck detection to overlay the selected necklace
-- Built with TensorFlow.js (face-landmarks-detection) for neck positioning
-- Save/share the try-on photo
+### 5. Add Name Charm builder step (`src/pages/CreateJewelry.tsx`)
 
-### 🛒 Cart & Checkout
-- Cart drawer/page with quantity controls
-- Stripe-powered checkout (full payment flow)
-- Order confirmation page
+**New state:**
+- `customName: string` (default `''`)
+- `nameFont: 'serif' | 'script' | 'modern'` (default `'script'`)
 
-### 👤 Customer Account (optional phase)
-- Order history
-- Saved addresses
+**New section "5. Name Charm (Optional)"** inserted after the charms section:
+- Text input, max 12 characters, placeholder "Enter your name..."
+- 3 font toggle buttons: Serif (Playfair Display), Script (Dancing Script), Modern (Montserrat)
+- Live preview: a gold-coloured oval/pendant SVG shape with the typed name rendered in the selected font, centered
+- Small note: "+$18 for any name"
 
-### 🔐 Admin Panel
-- **Product Management**: Add/edit/delete products with image upload
-- **Category Management**: Add new categories as the business grows
-- **Order Management**: View and update order status
-- **Image uploads** stored in Supabase Storage
+**Price update:**
+- If `customName.trim()` is non-empty, add $18 to the total price (added after `calculatePrice` result)
 
-## Backend (Supabase)
-- **Tables**: products, categories, orders, order_items
-- **Storage**: Product images bucket
-- **Auth**: Admin login for the management panel
-- **RLS**: Public read for products, admin-only write access
+**Price summary panel:**
+- Add a "Name Charm" line showing `+$18` when a name is entered
 
-## Payments (Stripe)
-- Product-based checkout sessions
-- Webhook handling for order confirmation
+**Cart integration:**
+- When adding to cart, if a name is entered, append it to the item name: e.g. `Custom Cuban Link — "SARAH"`
+- Include font choice in cart item description/metadata
 
-## Tech Stack
-- React + Vite + TypeScript + Tailwind CSS
-- Supabase (database, auth, storage)
-- Stripe (payments)
-- TensorFlow.js (AR face/neck detection)
+**Preview panel (right side):**
+- When a name is entered, show the name rendered in the chosen font below the charm emojis overlay
+
+### Technical Details
+
+- Name charm price is a constant `NAME_CHARM_PRICE = 18` defined at the top of CreateJewelry.tsx
+- Font mapping object: `{ serif: "'Playfair Display', serif", script: "'Dancing Script', cursive", modern: "'Montserrat', sans-serif" }`
+- The gold pendant preview uses an inline SVG with a `<ellipse>` filled with the gold gradient color (`#C4922A` / `#D4B07A`) and a `<text>` element using the selected font
+- No backend changes needed; entirely frontend state
 
