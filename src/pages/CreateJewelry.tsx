@@ -145,7 +145,7 @@ const CreateJewelry = () => {
                     {cat}
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {charms
+                    {charmsList
                       .filter((c) => c.category === cat)
                       .map((charm) => (
                         <button
