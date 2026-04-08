@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
-import { Gem, X, Plus, ShoppingBag, Sparkles, Loader2 } from 'lucide-react';
+import { Gem, X, Plus, ShoppingBag, Sparkles, Loader2, Type } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCartStore } from '@/lib/cart-store';
 import { toast } from 'sonner';
@@ -14,6 +14,14 @@ import {
   type Material,
   type ChainLength,
 } from '@/lib/custom-jewelry-data';
+
+const NAME_CHARM_PRICE = 18;
+
+const NAME_FONTS: { id: 'serif' | 'script' | 'modern'; label: string; family: string }[] = [
+  { id: 'serif', label: 'Serif', family: "'Playfair Display', serif" },
+  { id: 'script', label: 'Script', family: "'Dancing Script', cursive" },
+  { id: 'modern', label: 'Modern', family: "'Montserrat', sans-serif" },
+];
 
 const CreateJewelry = () => {
   const { data: chainsData, isLoading: chainsLoading } = useChains();
@@ -41,6 +49,8 @@ const CreateJewelry = () => {
   const [selectedCharms, setSelectedCharms] = useState<(Charm & { uid: string })[]>([]);
   const [selectedMaterial, setSelectedMaterial] = useState<Material>(materials[0]);
   const [selectedLength, setSelectedLength] = useState<ChainLength>(chainLengths[1]);
+  const [customName, setCustomName] = useState('');
+  const [nameFont, setNameFont] = useState<'serif' | 'script' | 'modern'>('script');
   const [step, setStep] = useState(0);
 
   const addCharm = useCallback((charm: Charm) => {
@@ -55,7 +65,9 @@ const CreateJewelry = () => {
     setSelectedCharms((prev) => prev.filter((c) => c.uid !== uid));
   }, []);
 
-  const price = calculatePrice(selectedChain, selectedCharms, selectedMaterial, selectedLength);
+  const hasNameCharm = customName.trim().length > 0;
+  const basePrice = calculatePrice(selectedChain, selectedCharms, selectedMaterial, selectedLength);
+  const price = hasNameCharm ? basePrice + NAME_CHARM_PRICE : basePrice;
 
   const { addItem } = useCartStore();
 
@@ -64,19 +76,20 @@ const CreateJewelry = () => {
       toast.error('Please select a chain type first');
       return;
     }
-    const charmNames = selectedCharms.map((c) => c.name).join(', ');
+    const nameSuffix = hasNameCharm ? ` — "${customName.trim().toUpperCase()}"` : '';
     addItem({
       id: `custom-${Date.now()}`,
-      name: `Custom ${selectedChain.name}`,
+      name: `Custom ${selectedChain.name}${nameSuffix}`,
       price,
       image: selectedChain.image,
       size: selectedLength.label,
-      material: selectedMaterial.name,
+      material: `${selectedMaterial.name}${hasNameCharm ? ` · Name: ${customName.trim()} (${NAME_FONTS.find(f => f.id === nameFont)?.label})` : ''}`,
     });
     toast.success('Custom piece added to cart!');
   };
 
   const charmCategories = [...new Set(charmsList.map((c) => c.category))];
+  const selectedFontFamily = NAME_FONTS.find(f => f.id === nameFont)?.family || '';
 
   if (chainsLoading || charmsLoading) {
     return (
@@ -211,6 +224,92 @@ const CreateJewelry = () => {
                 ))}
               </div>
             </BuilderSection>
+
+            {/* 5. Name Charm */}
+            <BuilderSection title="5. Name Charm (Optional)" subtitle={`Add your name to the chain · +$${NAME_CHARM_PRICE}`}>
+              <div className="space-y-4">
+                {/* Name input */}
+                <div>
+                  <input
+                    type="text"
+                    value={customName}
+                    onChange={(e) => setCustomName(e.target.value.slice(0, 12))}
+                    placeholder="Enter your name..."
+                    maxLength={12}
+                    className="w-full rounded-xl border-2 border-border bg-secondary px-4 py-3 font-body text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none transition-colors"
+                  />
+                  <p className="font-body text-xs text-muted-foreground mt-1.5">
+                    {customName.length}/12 characters
+                  </p>
+                </div>
+
+                {/* Font picker */}
+                <div>
+                  <p className="font-body text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+                    Font Style
+                  </p>
+                  <div className="flex gap-2">
+                    {NAME_FONTS.map((font) => (
+                      <button
+                        key={font.id}
+                        onClick={() => setNameFont(font.id)}
+                        className={`flex-1 rounded-xl border-2 py-3 px-3 text-center transition-all ${
+                          nameFont === font.id
+                            ? 'border-primary bg-primary/10'
+                            : 'border-border hover:border-primary/40'
+                        }`}
+                      >
+                        <span
+                          className="block text-lg text-foreground"
+                          style={{ fontFamily: font.family }}
+                        >
+                          Aa
+                        </span>
+                        <span className="font-body text-[10px] text-muted-foreground mt-1 block">
+                          {font.label}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Live pendant preview */}
+                {hasNameCharm && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex justify-center"
+                  >
+                    <svg width="200" height="120" viewBox="0 0 200 120">
+                      <defs>
+                        <linearGradient id="gold-pendant" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#D4B07A" />
+                          <stop offset="50%" stopColor="#C4922A" />
+                          <stop offset="100%" stopColor="#D4B07A" />
+                        </linearGradient>
+                      </defs>
+                      {/* Chain links */}
+                      <path d="M60 8 Q100 0 140 8" stroke="#C4922A" strokeWidth="2" fill="none" opacity="0.5" />
+                      {/* Pendant oval */}
+                      <ellipse cx="100" cy="65" rx="70" ry="40" fill="url(#gold-pendant)" opacity="0.9" />
+                      <ellipse cx="100" cy="65" rx="65" ry="36" fill="none" stroke="#C4922A" strokeWidth="0.5" opacity="0.6" />
+                      {/* Name text */}
+                      <text
+                        x="100"
+                        y="72"
+                        textAnchor="middle"
+                        fontFamily={selectedFontFamily}
+                        fontSize={customName.length > 8 ? 16 : customName.length > 5 ? 20 : 24}
+                        fill="#0F0E0A"
+                        fontWeight="600"
+                      >
+                        {customName.trim()}
+                      </text>
+                    </svg>
+                  </motion.div>
+                )}
+              </div>
+            </BuilderSection>
           </div>
 
           {/* Right: live preview & summary */}
@@ -248,6 +347,25 @@ const CreateJewelry = () => {
                       </motion.span>
                     ))}
                   </div>
+                )}
+                {/* Name charm overlay */}
+                {hasNameCharm && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="absolute bottom-14 left-0 right-0 flex justify-center"
+                  >
+                    <span
+                      className="px-3 py-1 rounded-full text-sm font-semibold"
+                      style={{
+                        fontFamily: selectedFontFamily,
+                        background: 'linear-gradient(135deg, #D4B07A, #C4922A)',
+                        color: '#0F0E0A',
+                      }}
+                    >
+                      {customName.trim()}
+                    </span>
+                  </motion.div>
                 )}
                 {selectedChain && (
                   <div className="absolute top-3 left-3 rounded-full bg-background/80 backdrop-blur px-3 py-1">
@@ -321,6 +439,12 @@ const CreateJewelry = () => {
                       <span>{selectedMaterial.name}</span>
                       <span>×{selectedMaterial.priceMultiplier}</span>
                     </div>
+                    {hasNameCharm && (
+                      <div className="flex justify-between text-primary font-medium">
+                        <span>Name Charm</span>
+                        <span>+${NAME_CHARM_PRICE}</span>
+                      </div>
+                    )}
                     <div className="border-t border-border my-2" />
                   </>
                 )}
