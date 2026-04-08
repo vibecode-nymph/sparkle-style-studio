@@ -16,11 +16,32 @@ import {
 } from '@/lib/custom-jewelry-data';
 
 const CreateJewelry = () => {
+  const { data: chainsData, isLoading: chainsLoading } = useChains();
+  const { data: charmsData, isLoading: charmsLoading } = useCharms();
+
+  const chainTypes = useMemo(() =>
+    chainsData?.map((c) => ({
+      id: c.id,
+      name: c.name,
+      basePrice: c.base_price || c.price,
+      image: c.images?.[0] || '',
+      description: c.description,
+    })) ?? [], [chainsData]);
+
+  const charmsList = useMemo(() =>
+    charmsData?.map((c) => ({
+      id: c.id,
+      name: c.name,
+      price: c.price,
+      emoji: c.emoji || '💎',
+      category: c.category,
+    })) ?? [], [charmsData]);
+
   const [selectedChain, setSelectedChain] = useState<ChainType | null>(null);
   const [selectedCharms, setSelectedCharms] = useState<(Charm & { uid: string })[]>([]);
   const [selectedMaterial, setSelectedMaterial] = useState<Material>(materials[0]);
   const [selectedLength, setSelectedLength] = useState<ChainLength>(chainLengths[1]);
-  const [step, setStep] = useState(0); // for mobile guidance, but all visible on desktop
+  const [step, setStep] = useState(0);
 
   const addCharm = useCallback((charm: Charm) => {
     if (selectedCharms.length >= 5) {
@@ -55,7 +76,15 @@ const CreateJewelry = () => {
     toast.success('Custom piece added to cart!');
   };
 
-  const charmCategories = [...new Set(charms.map((c) => c.category))];
+  const charmCategories = [...new Set(charmsList.map((c) => c.category))];
+
+  if (chainsLoading || charmsLoading) {
+    return (
+      <div className="min-h-screen pt-20 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pt-20">
