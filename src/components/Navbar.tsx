@@ -12,6 +12,7 @@ const Navbar = () => {
   const links = [
     { to: '/shop?category=chains', label: 'Necklaces' },
     { to: '/shop?category=bracelets', label: 'Bracelets' },
+    { to: '/shop?category=name-chains', label: 'Name Chains' },
     { to: '/shop', label: 'Best Sellers' },
     { to: '/create', label: 'Personalized', icon: <Gem className="h-3.5 w-3.5" /> },
   ];

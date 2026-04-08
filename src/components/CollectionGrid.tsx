@@ -18,6 +18,11 @@ const collections = [
     link: '/create',
   },
   {
+    title: 'Name Chains',
+    image: 'https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?w=600&h=600&fit=crop',
+    link: '/shop?category=name-chains',
+  },
+  {
     title: 'Most Gifted',
     image: 'https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?w=600&h=600&fit=crop',
     link: '/shop',

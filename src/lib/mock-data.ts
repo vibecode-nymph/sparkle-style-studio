@@ -35,6 +35,13 @@ export const categories: Category[] = [
     image: 'https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=600&h=600&fit=crop',
     description: 'Bold bracelets for every occasion',
   },
+  {
+    id: '3',
+    name: 'Name Chains',
+    slug: 'name-chains',
+    image: 'https://images.unsplash.com/photo-1601121141461-9d6647bca1ed?w=600&h=600&fit=crop',
+    description: 'Personalized name chains crafted just for you',
+  },
 ];
 
 export const products: Product[] = [
