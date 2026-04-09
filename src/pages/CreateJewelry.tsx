@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence, Reorder } from 'framer-motion';
-import { Gem, X, Plus, ShoppingBag, Sparkles, Loader2, Type } from 'lucide-react';
+import { Gem, X, Plus, ShoppingBag, Sparkles, Loader2 } from 'lucide-react';
+import NameNecklacePreview from '@/components/NameNecklacePreview';
 import { Button } from '@/components/ui/button';
 import { useCartStore } from '@/lib/cart-store';
 import { toast } from 'sonner';
