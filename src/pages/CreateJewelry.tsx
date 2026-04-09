@@ -90,6 +90,7 @@ const CreateJewelry = () => {
   };
 
   const charmCategories = [...new Set(charmsList.map((c) => c.category))];
+  // fontFamily still used for the font picker preview labels
   const selectedFontFamily = NAME_FONTS.find(f => f.id === nameFont)?.family || '';
 
   if (chainsLoading || charmsLoading) {
