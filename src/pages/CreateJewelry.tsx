@@ -90,6 +90,7 @@ const CreateJewelry = () => {
   };
 
   const charmCategories = [...new Set(charmsList.map((c) => c.category))];
+  // fontFamily still used for the font picker preview labels
   const selectedFontFamily = NAME_FONTS.find(f => f.id === nameFont)?.family || '';
 
   if (chainsLoading || charmsLoading) {
@@ -277,7 +278,7 @@ const CreateJewelry = () => {
                 {/* Live pendant preview */}
                 <NameNecklacePreview
                   name={customName}
-                  fontFamily={selectedFontFamily}
+                  fontId={nameFont}
                   material={
                     selectedMaterial.name.toLowerCase().includes('rose')
                       ? 'rose-gold'
@@ -332,7 +333,7 @@ const CreateJewelry = () => {
                   <div className="absolute bottom-14 left-0 right-0">
                     <NameNecklacePreview
                       name={customName}
-                      fontFamily={selectedFontFamily}
+                      fontId={nameFont}
                       material={
                         selectedMaterial.name.toLowerCase().includes('rose')
                           ? 'rose-gold'
