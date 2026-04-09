@@ -275,40 +275,18 @@ const CreateJewelry = () => {
                 </div>
 
                 {/* Live pendant preview */}
-                {hasNameCharm && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="flex justify-center"
-                  >
-                    <svg width="200" height="120" viewBox="0 0 200 120">
-                      <defs>
-                        <linearGradient id="gold-pendant" x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stopColor="#D4B07A" />
-                          <stop offset="50%" stopColor="#C4922A" />
-                          <stop offset="100%" stopColor="#D4B07A" />
-                        </linearGradient>
-                      </defs>
-                      {/* Chain links */}
-                      <path d="M60 8 Q100 0 140 8" stroke="#C4922A" strokeWidth="2" fill="none" opacity="0.5" />
-                      {/* Pendant oval */}
-                      <ellipse cx="100" cy="65" rx="70" ry="40" fill="url(#gold-pendant)" opacity="0.9" />
-                      <ellipse cx="100" cy="65" rx="65" ry="36" fill="none" stroke="#C4922A" strokeWidth="0.5" opacity="0.6" />
-                      {/* Name text */}
-                      <text
-                        x="100"
-                        y="72"
-                        textAnchor="middle"
-                        fontFamily={selectedFontFamily}
-                        fontSize={customName.length > 8 ? 16 : customName.length > 5 ? 20 : 24}
-                        fill="#0F0E0A"
-                        fontWeight="600"
-                      >
-                        {customName.trim()}
-                      </text>
-                    </svg>
-                  </motion.div>
-                )}
+                <NameNecklacePreview
+                  name={customName}
+                  fontFamily={selectedFontFamily}
+                  material={
+                    selectedMaterial.name.toLowerCase().includes('rose')
+                      ? 'rose-gold'
+                      : selectedMaterial.name.toLowerCase().includes('silver')
+                      ? 'silver'
+                      : 'gold'
+                  }
+                  size="md"
+                />
               </div>
             </BuilderSection>
           </div>
@@ -351,22 +329,20 @@ const CreateJewelry = () => {
                 )}
                 {/* Name charm overlay */}
                 {hasNameCharm && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="absolute bottom-14 left-0 right-0 flex justify-center"
-                  >
-                    <span
-                      className="px-3 py-1 rounded-full text-sm font-semibold"
-                      style={{
-                        fontFamily: selectedFontFamily,
-                        background: 'linear-gradient(135deg, #D4B07A, #C4922A)',
-                        color: '#0F0E0A',
-                      }}
-                    >
-                      {customName.trim()}
-                    </span>
-                  </motion.div>
+                  <div className="absolute bottom-14 left-0 right-0">
+                    <NameNecklacePreview
+                      name={customName}
+                      fontFamily={selectedFontFamily}
+                      material={
+                        selectedMaterial.name.toLowerCase().includes('rose')
+                          ? 'rose-gold'
+                          : selectedMaterial.name.toLowerCase().includes('silver')
+                          ? 'silver'
+                          : 'gold'
+                      }
+                      size="sm"
+                    />
+                  </div>
                 )}
                 {selectedChain && (
                   <div className="absolute top-3 left-3 rounded-full bg-background/80 backdrop-blur px-3 py-1">
