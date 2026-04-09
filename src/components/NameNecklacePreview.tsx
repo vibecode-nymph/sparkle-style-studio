@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useRef, useEffect, useState } from 'react';
 
 interface NameNecklacePreviewProps {
   name: string;
@@ -8,46 +9,58 @@ interface NameNecklacePreviewProps {
   className?: string;
 }
 
-const materialGradients = {
+const materialStyles = {
   gold: {
     stops: [
-      { offset: '0%', color: '#D4B07A' },
-      { offset: '30%', color: '#C4922A' },
-      { offset: '50%', color: '#E8D5A3' },
-      { offset: '70%', color: '#C4922A' },
-      { offset: '100%', color: '#D4B07A' },
+      { offset: '0%', color: '#B8860B' },
+      { offset: '20%', color: '#D4A843' },
+      { offset: '40%', color: '#F5E6A3' },
+      { offset: '55%', color: '#D4A843' },
+      { offset: '75%', color: '#C4922A' },
+      { offset: '100%', color: '#B8860B' },
     ],
-    chain: '#C4922A',
-    shadow: 'rgba(196, 146, 42, 0.3)',
+    stroke: '#C4922A',
+    chain: '#B8860B',
+    chainHighlight: '#D4A843',
+    shadow: 'rgba(196, 146, 42, 0.4)',
+    ringFill: '#D4A843',
   },
   silver: {
     stops: [
-      { offset: '0%', color: '#C0C0C0' },
-      { offset: '30%', color: '#A8A8A8' },
-      { offset: '50%', color: '#E8E8E8' },
-      { offset: '70%', color: '#A8A8A8' },
-      { offset: '100%', color: '#C0C0C0' },
+      { offset: '0%', color: '#909090' },
+      { offset: '20%', color: '#B0B0B0' },
+      { offset: '40%', color: '#E0E0E0' },
+      { offset: '55%', color: '#B0B0B0' },
+      { offset: '75%', color: '#A0A0A0' },
+      { offset: '100%', color: '#909090' },
     ],
-    chain: '#A8A8A8',
-    shadow: 'rgba(168, 168, 168, 0.3)',
+    stroke: '#A0A0A0',
+    chain: '#909090',
+    chainHighlight: '#C0C0C0',
+    shadow: 'rgba(160, 160, 160, 0.4)',
+    ringFill: '#B0B0B0',
   },
   'rose-gold': {
     stops: [
-      { offset: '0%', color: '#E8B4B8' },
-      { offset: '30%', color: '#D4878C' },
-      { offset: '50%', color: '#F0D0D4' },
-      { offset: '70%', color: '#D4878C' },
-      { offset: '100%', color: '#E8B4B8' },
+      { offset: '0%', color: '#B76E79' },
+      { offset: '20%', color: '#D4878C' },
+      { offset: '40%', color: '#F0C0C4' },
+      { offset: '55%', color: '#D4878C' },
+      { offset: '75%', color: '#C47A7F' },
+      { offset: '100%', color: '#B76E79' },
     ],
-    chain: '#D4878C',
-    shadow: 'rgba(212, 135, 140, 0.3)',
+    stroke: '#C47A7F',
+    chain: '#B76E79',
+    chainHighlight: '#D4878C',
+    shadow: 'rgba(180, 110, 121, 0.4)',
+    ringFill: '#D4878C',
   },
 };
 
-const sizes = {
-  sm: { width: 200, height: 100, fontSize: 28, chainY: 12 },
-  md: { width: 300, height: 140, fontSize: 40, chainY: 16 },
-  lg: { width: 400, height: 180, fontSize: 52, chainY: 20 },
+const sizeConfig = {
+  sm: { height: 90, fontSize: 24, chainStroke: 1, ringR: 2.5, ringStroke: 1 },
+  md: { height: 140, fontSize: 36, chainStroke: 1.5, ringR: 3.5, ringStroke: 1.2 },
+  lg: { height: 180, fontSize: 48, chainStroke: 2, ringR: 4.5, ringStroke: 1.5 },
 };
 
 const NameNecklacePreview = ({
@@ -57,120 +70,230 @@ const NameNecklacePreview = ({
   size = 'md',
   className = '',
 }: NameNecklacePreviewProps) => {
-  const mat = materialGradients[material];
-  const dim = sizes[size];
-  const displayName = name.trim() || 'Yourname';
+  const mat = materialStyles[material];
+  const cfg = sizeConfig[size];
+  const textRef = useRef<SVGTextElement>(null);
+  const [textBox, setTextBox] = useState({ width: 0, x: 0 });
+
+  const displayName = name.trim() || 'Name';
   const isEmpty = !name.trim();
 
-  // Adjust font size based on name length
+  // Measure the rendered text to get exact width
+  useEffect(() => {
+    if (textRef.current) {
+      const bbox = textRef.current.getBBox();
+      setTextBox({ width: bbox.width, x: bbox.x });
+    }
+  }, [displayName, fontFamily, cfg.fontSize]);
+
+  // Dynamic font size: shrink for longer names
   const adjustedFontSize =
     displayName.length > 10
-      ? dim.fontSize * 0.6
+      ? cfg.fontSize * 0.55
       : displayName.length > 7
-      ? dim.fontSize * 0.75
+      ? cfg.fontSize * 0.7
       : displayName.length > 5
-      ? dim.fontSize * 0.85
-      : dim.fontSize;
+      ? cfg.fontSize * 0.82
+      : cfg.fontSize;
 
-  const textY = dim.height * 0.58;
-  const cx = dim.width / 2;
+  // SVG dimensions — pad generously for chain curves
+  const svgWidth = Math.max(textBox.width + 80, 160);
+  const cx = svgWidth / 2;
+  const textY = cfg.height * 0.62;
 
-  // Chain attachment points — offset from center based on text width estimate
-  const textWidthEstimate = displayName.length * adjustedFontSize * 0.45;
-  const leftAnchor = cx - textWidthEstimate / 2 + adjustedFontSize * 0.1;
-  const rightAnchor = cx + textWidthEstimate / 2 - adjustedFontSize * 0.1;
+  // Attachment points — at the start and end of the text
+  const halfText = textBox.width / 2;
+  const leftAttach = cx - halfText - 2;
+  const rightAttach = cx + halfText + 2;
 
-  const gradientId = `necklace-metal-${material}-${size}`;
-  const shadowId = `necklace-shadow-${size}`;
+  // Ring centers sit just above the text
+  const ringY = textY - adjustedFontSize * 0.65;
+  const ringR = cfg.ringR;
+
+  // Chain endpoints at top edges
+  const chainTopY = 4;
+  const chainLeftX = 8;
+  const chainRightX = svgWidth - 8;
+
+  // Unique IDs
+  const gradId = `nk-grad-${material}-${size}`;
+  const shadowId = `nk-shadow-${size}`;
+  const shineId = `nk-shine-${material}-${size}`;
+
+  // Connector bar — the thin underline that ties all letters together (laser-cut style)
+  const barY = textY + 3;
+  const barLeft = leftAttach + ringR + 2;
+  const barRight = rightAttach - ringR - 2;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
       className={`flex justify-center ${className}`}
     >
       <svg
-        width={dim.width}
-        height={dim.height}
-        viewBox={`0 0 ${dim.width} ${dim.height}`}
+        width={svgWidth}
+        height={cfg.height}
+        viewBox={`0 0 ${svgWidth} ${cfg.height}`}
         className="overflow-visible"
+        style={{ maxWidth: '100%' }}
       >
         <defs>
-          <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+          {/* Metal gradient */}
+          <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="80%">
             {mat.stops.map((s, i) => (
               <stop key={i} offset={s.offset} stopColor={s.color} />
             ))}
           </linearGradient>
-          <filter id={shadowId} x="-10%" y="-10%" width="120%" height="130%">
-            <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor={mat.shadow} floodOpacity="0.6" />
+
+          {/* Shine overlay */}
+          <linearGradient id={shineId} x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#fff" stopOpacity="0.25" />
+            <stop offset="50%" stopColor="#fff" stopOpacity="0" />
+            <stop offset="100%" stopColor="#000" stopOpacity="0.08" />
+          </linearGradient>
+
+          {/* Drop shadow */}
+          <filter id={shadowId} x="-15%" y="-15%" width="130%" height="150%">
+            <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" floodColor={mat.shadow} floodOpacity="0.7" />
           </filter>
         </defs>
 
-        {/* Chain — curved line from edges down to name anchor points */}
+        {/* ── Chain: left side ── */}
         <path
-          d={`M 0 ${dim.chainY} Q ${leftAnchor * 0.5} ${dim.chainY + 20} ${leftAnchor} ${textY - adjustedFontSize * 0.55}`}
+          d={`M ${chainLeftX} ${chainTopY}
+              C ${chainLeftX + 10} ${chainTopY + 25},
+                ${leftAttach - 15} ${ringY - 30},
+                ${leftAttach} ${ringY - ringR - 1}`}
           stroke={mat.chain}
-          strokeWidth="1.5"
+          strokeWidth={cfg.chainStroke}
           fill="none"
-          opacity={isEmpty ? 0.3 : 0.6}
+          opacity={isEmpty ? 0.25 : 0.55}
           strokeLinecap="round"
         />
+        {/* Chain highlight */}
         <path
-          d={`M ${dim.width} ${dim.chainY} Q ${rightAnchor + (dim.width - rightAnchor) * 0.5} ${dim.chainY + 20} ${rightAnchor} ${textY - adjustedFontSize * 0.55}`}
-          stroke={mat.chain}
-          strokeWidth="1.5"
+          d={`M ${chainLeftX} ${chainTopY}
+              C ${chainLeftX + 10} ${chainTopY + 25},
+                ${leftAttach - 15} ${ringY - 30},
+                ${leftAttach} ${ringY - ringR - 1}`}
+          stroke={mat.chainHighlight}
+          strokeWidth={cfg.chainStroke * 0.4}
           fill="none"
-          opacity={isEmpty ? 0.3 : 0.6}
+          opacity={isEmpty ? 0.1 : 0.3}
           strokeLinecap="round"
         />
 
-        {/* Small loops at anchor points */}
-        <circle
-          cx={leftAnchor}
-          cy={textY - adjustedFontSize * 0.55}
-          r="2.5"
-          fill="none"
+        {/* ── Chain: right side ── */}
+        <path
+          d={`M ${chainRightX} ${chainTopY}
+              C ${chainRightX - 10} ${chainTopY + 25},
+                ${rightAttach + 15} ${ringY - 30},
+                ${rightAttach} ${ringY - ringR - 1}`}
           stroke={mat.chain}
-          strokeWidth="1"
-          opacity={isEmpty ? 0.3 : 0.6}
+          strokeWidth={cfg.chainStroke}
+          fill="none"
+          opacity={isEmpty ? 0.25 : 0.55}
+          strokeLinecap="round"
         />
-        <circle
-          cx={rightAnchor}
-          cy={textY - adjustedFontSize * 0.55}
-          r="2.5"
+        <path
+          d={`M ${chainRightX} ${chainTopY}
+              C ${chainRightX - 10} ${chainTopY + 25},
+                ${rightAttach + 15} ${ringY - 30},
+                ${rightAttach} ${ringY - ringR - 1}`}
+          stroke={mat.chainHighlight}
+          strokeWidth={cfg.chainStroke * 0.4}
           fill="none"
-          stroke={mat.chain}
-          strokeWidth="1"
-          opacity={isEmpty ? 0.3 : 0.6}
+          opacity={isEmpty ? 0.1 : 0.3}
+          strokeLinecap="round"
         />
 
-        {/* Name text — laser-cut style */}
+        {/* ── Bail rings (attachment loops) ── */}
+        <circle
+          cx={leftAttach}
+          cy={ringY}
+          r={ringR}
+          fill="none"
+          stroke={`url(#${gradId})`}
+          strokeWidth={cfg.ringStroke}
+          opacity={isEmpty ? 0.3 : 0.85}
+        />
+        <circle
+          cx={rightAttach}
+          cy={ringY}
+          r={ringR}
+          fill="none"
+          stroke={`url(#${gradId})`}
+          strokeWidth={cfg.ringStroke}
+          opacity={isEmpty ? 0.3 : 0.85}
+        />
+
+        {/* ── Small connector bars: ring → text ── */}
+        <line
+          x1={leftAttach}
+          y1={ringY + ringR}
+          x2={leftAttach + 3}
+          y2={barY}
+          stroke={mat.stroke}
+          strokeWidth={cfg.ringStroke * 0.8}
+          opacity={isEmpty ? 0.2 : 0.6}
+        />
+        <line
+          x1={rightAttach}
+          y1={ringY + ringR}
+          x2={rightAttach - 3}
+          y2={barY}
+          stroke={mat.stroke}
+          strokeWidth={cfg.ringStroke * 0.8}
+          opacity={isEmpty ? 0.2 : 0.6}
+        />
+
+        {/* ── Laser-cut connector bar (underline that connects all letters) ── */}
+        {!isEmpty && textBox.width > 0 && (
+          <line
+            x1={barLeft}
+            y1={barY}
+            x2={barRight}
+            y2={barY}
+            stroke={`url(#${gradId})`}
+            strokeWidth={cfg.ringStroke * 0.7}
+            opacity={0.35}
+            strokeLinecap="round"
+          />
+        )}
+
+        {/* ── Name text (laser-cut lettering) ── */}
         <text
+          ref={textRef}
           x={cx}
           y={textY}
           textAnchor="middle"
           fontFamily={fontFamily}
           fontSize={adjustedFontSize}
           fontWeight="400"
-          fill={`url(#${gradientId})`}
+          fill={`url(#${gradId})`}
           filter={`url(#${shadowId})`}
-          opacity={isEmpty ? 0.35 : 1}
-          style={{ letterSpacing: '-0.5px' }}
+          opacity={isEmpty ? 0.3 : 1}
+          style={{ letterSpacing: '0.5px' }}
         >
           {displayName}
         </text>
 
-        {/* Subtle underline connector for laser-cut look */}
+        {/* ── Shine overlay on text ── */}
         {!isEmpty && (
-          <line
-            x1={leftAnchor + 5}
-            y1={textY + 4}
-            x2={rightAnchor - 5}
-            y2={textY + 4}
-            stroke={mat.chain}
-            strokeWidth="0.5"
-            opacity="0.2"
-          />
+          <text
+            x={cx}
+            y={textY}
+            textAnchor="middle"
+            fontFamily={fontFamily}
+            fontSize={adjustedFontSize}
+            fontWeight="400"
+            fill={`url(#${shineId})`}
+            style={{ letterSpacing: '0.5px', pointerEvents: 'none' }}
+          >
+            {displayName}
+          </text>
         )}
       </svg>
     </motion.div>
